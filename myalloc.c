@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <string.h>
 
 typedef struct block
 {
@@ -15,6 +16,7 @@ static block_t *head = NULL;
 
 void my_free(void *ptr);
 void *my_malloc(size_t size);
+void *my_realloc(void *ptr, size_t new_size);
 
 int main()
 {
@@ -23,7 +25,7 @@ int main()
     void **ptrs = NULL;
     int capacity = 0;
     int count = 0;
-    printf("malloc()\nfree().");
+    printf(" | OPTIONS | \n 1.use malloc() \n 2.use free(): ");
     scanf("%d", &choice);
     while (1)
     {
@@ -37,28 +39,39 @@ int main()
                 ptrs = realloc(ptrs, capacity * sizeof(void *)); // εαν το καπασιτι ειανι 4 και καθε void *(pointer τυπου void) που ειναι 8 βυτεσ ζητας συνολο 8*4 δηλαδη χωρο για 4 καινουργιους ποιντερσ
             }
             ptrs[count++] = p;
+            printf("choice ");
+            scanf("%d", &choice);
         }
         else if (choice == 2)
         {
-            int idx;
-            printf("Which slot to free (0 to %d): ", count - 1);
-            scanf("%d", &idx);
 
-            if (idx < 0 || idx >= count)
+            if (count == 0)
             {
-                printf("Invalid slot.\n");
+                printf("No memory avaliable,please make a new choice ");
             }
             else
             {
-                my_free(ptrs[idx]);
-                ptrs[idx] = NULL;
+
+                int idx;
+                printf("Which slot to free (0 to %d): ", count - 1);
+                scanf("%d", &idx);
+
+                if (idx < 0 || idx >= count)
+                {
+                    printf("Invalid slot.\n");
+                }
+                else
+                {
+                    my_free(ptrs[idx]);
+                    ptrs[idx] = NULL;
+                }
+                count--;
             }
+            printf("choice a new option ");
+            scanf("%d", &choice);
         }
         else
             return 0;
-
-        printf("choice ");
-        scanf("%d", &choice);
     }
     return 0;
 }
@@ -108,4 +121,25 @@ void my_free(void *ptr)
 
     block_t *block = (block_t *)ptr - 1; // step back from payload
     block->free = 1;                     // mark reusable
+}
+
+void *my_realloc(void *ptr, size_t new_size)
+{
+    if (ptr == NULL)
+    {
+        return my_malloc(new_size);
+    }
+
+    if (new_size == 0)
+    {
+        my_free(ptr);
+        return NULL;
+    }
+
+    block_t *block = (block_t *)ptr - 1;
+
+    if (block->size >= new_size)
+    {
+        return ptr;
+    }
 }
