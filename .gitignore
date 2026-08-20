@@ -1,0 +1,5 @@
+myalloc
+*.o
+*.out
+.vscode/
+*.swp
