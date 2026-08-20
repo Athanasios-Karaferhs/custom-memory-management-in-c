@@ -25,21 +25,21 @@ int main()
     void **ptrs = NULL;
     int capacity = 0;
     int count = 0;
-    printf(" | OPTIONS | \n 1.use malloc() \n 2.use free(): ");
+    printf(" | OPTIONS | \n 1.use malloc() \n 2.use free() \n 3.use realloc() \n 4.exit :");
     scanf("%d", &choice);
     while (1)
     {
         if (choice == 1)
         {
             p = my_malloc(100);
-            printf("The new pointer on the list avaliable for usage is: %p\n", p);
+            printf("\nThe new pointer on the list avaliable for usage is: %p\n", p);
             if (count == capacity)
             {
                 capacity = (capacity == 0) ? 4 : capacity * 2;
                 ptrs = realloc(ptrs, capacity * sizeof(void *)); // εαν το καπασιτι ειανι 4 και καθε void *(pointer τυπου void) που ειναι 8 βυτεσ ζητας συνολο 8*4 δηλαδη χωρο για 4 καινουργιους ποιντερσ
             }
             ptrs[count++] = p;
-            printf("choice ");
+            printf("\nChoice a new option");
             scanf("%d", &choice);
         }
         else if (choice == 2)
@@ -47,7 +47,7 @@ int main()
 
             if (count == 0)
             {
-                printf("No memory avaliable,please make a new choice ");
+                printf("\nNo memory avaliable,please make a new choice \n");
             }
             else
             {
@@ -67,11 +67,37 @@ int main()
                 }
                 count--;
             }
-            printf("choice a new option ");
+            printf("\nchoice a new option ");
             scanf("%d", &choice);
         }
-        else
+        else if (choice == 3)
+        {
+            int idx;
+            size_t new_size;
+            if (count > 0)
+            {
+                printf("Which slot to realloc (0-%d): ", count - 1);
+                scanf("%d", &idx);
+                printf("New size: ");
+                scanf("%zu", &new_size); // zu, z= size is "size_t" and u = unsigned integer
+            }
+            if (idx < 0 || idx >= count || ptrs[idx] == NULL)
+                printf("Invalid slot.\n");
+            else
+            {
+                ptrs[idx] = my_realloc(ptrs[idx], new_size);
+                printf("\nrealloc finished succesfully \n");
+            }
+            printf("\nchoice a new option ");
+            scanf("%d", &choice);
+        }
+        else if (choice == 4)
             return 0;
+        else
+        {
+            printf("\nWrong options plz select again ");
+            scanf("%d", &choice);
+        }
     }
     return 0;
 }
@@ -126,9 +152,7 @@ void my_free(void *ptr)
 void *my_realloc(void *ptr, size_t new_size)
 {
     if (ptr == NULL)
-    {
         return my_malloc(new_size);
-    }
 
     if (new_size == 0)
     {
@@ -136,10 +160,18 @@ void *my_realloc(void *ptr, size_t new_size)
         return NULL;
     }
 
-    block_t *block = (block_t *)ptr - 1;
+    block_t *block = (block_t *)ptr - 1; // παρομια με το free()
 
     if (block->size >= new_size)
     {
         return ptr;
     }
+
+    void *new_ptr = my_malloc(new_size);
+    if (new_ptr == NULL)
+        return NULL; // σε περιπτωση αποτυχιας να εχουμε ακομα τα δεδομενα.
+
+    memcpy(new_ptr, ptr, block->size);
+    my_free(ptr);
+    return new_ptr;
 }
