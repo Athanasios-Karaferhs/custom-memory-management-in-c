@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
+#include <ncurses.h> //terminal ui
 
 typedef struct block
 {
@@ -20,85 +21,129 @@ void *my_realloc(void *ptr, size_t new_size);
 
 int main()
 {
+    initscr();
+    cbreak(); // read input without enter
+    echo();
+
     int choice;
     void *p;
     void **ptrs = NULL;
     int capacity = 0;
     int count = 0;
-    printf(" | OPTIONS | \n 1.use malloc() \n 2.use free() \n 3.use realloc() \n 4.exit :");
-    scanf("%d", &choice);
+
     while (1)
     {
+
+        mvprintw(0, 0, "| OPTIONS |                              ");
+        mvprintw(1, 0, "1. malloc()                              ");
+        mvprintw(2, 0, "2. free()                                ");
+        mvprintw(3, 0, "3. realloc()                             ");
+        mvprintw(4, 0, "4. exit                                  ");
+        mvprintw(5, 0, "> ");
+        clrtoeol();
+        refresh();
+        scanw("%d", &choice);
+
         if (choice == 1)
         {
+            mvprintw(8, 0, "            ");
+            mvprintw(9, 0, "           ");
             p = my_malloc(100);
-            printf("\nThe new pointer on the list avaliable for usage is: %p\n", p);
+            mvprintw(7, 0, "New pointer available: %p          ", p);
+
             if (count == capacity)
             {
                 capacity = (capacity == 0) ? 4 : capacity * 2;
-                ptrs = realloc(ptrs, capacity * sizeof(void *)); // εαν το καπασιτι ειανι 4 και καθε void *(pointer τυπου void) που ειναι 8 βυτεσ ζητας συνολο 8*4 δηλαδη χωρο για 4 καινουργιους ποιντερσ
+                ptrs = realloc(ptrs, capacity * sizeof(void *));
             }
             ptrs[count++] = p;
-            printf("\nChoice a new option");
-            scanf("%d", &choice);
         }
         else if (choice == 2)
         {
-
+            mvprintw(8, 0, "            ");
+            mvprintw(9, 0, "           ");
             if (count == 0)
             {
-                printf("\nNo memory avaliable,please make a new choice \n");
+                mvprintw(7, 0, "No memory available.                ");
+                refresh();
             }
             else
             {
-
                 int idx;
-                printf("Which slot to free (0 to %d): ", count - 1);
-                scanf("%d", &idx);
-
+                mvprintw(7, 0, "Which slot to free (0 to %d): ", count - 1);
+                clrtoeol();
+                refresh();
+                scanw("%d", &idx);
+                while (idx > count - 1)
+                {
+                    mvprintw(8, 0, " ");
+                    mvprintw(7, 0, "Please select from (0-%d)   \n", count - 1);
+                    scanw("%d", &idx);
+                }
                 if (idx < 0 || idx >= count)
                 {
-                    printf("Invalid slot.\n");
+                    mvprintw(8, 0, "Invalid slot.                       ");
                 }
                 else
                 {
+                    mvprintw(7, 0, "slot is free                      ");
+                    mvprintw(8, 0, " ");
                     my_free(ptrs[idx]);
                     ptrs[idx] = NULL;
                 }
                 count--;
             }
-            printf("\nchoice a new option ");
-            scanf("%d", &choice);
         }
         else if (choice == 3)
         {
-            int idx;
-            size_t new_size;
+            mvprintw(8, 0, "            ");
+            mvprintw(9, 0, "           ");
+            int idx = -1;
+            size_t new_size = 0;
+
             if (count > 0)
             {
-                printf("Which slot to realloc (0-%d): ", count - 1);
-                scanf("%d", &idx);
-                printf("New size: ");
-                scanf("%zu", &new_size); // zu, z= size is "size_t" and u = unsigned integer
+                mvprintw(7, 0, "Which slot to realloc (0-%d): ", count - 1);
+                clrtoeol();
+                refresh();
+                scanw("%d", &idx);
+                while (idx > count - 1)
+                {
+                    mvprintw(8, 0, " ");
+                    mvprintw(7, 0, "Please select from (0-%d)   \n", count - 1);
+                    scanw("%d", &idx);
+                }
+                mvprintw(8, 0, "New size: ");
+                clrtoeol();
+                refresh();
+                scanw("%zu", &new_size);
             }
+
             if (idx < 0 || idx >= count || ptrs[idx] == NULL)
-                printf("Invalid slot.\n");
+            {
+                mvprintw(9, 0, "Invalid slot.                       ");
+                refresh();
+            }
             else
             {
                 ptrs[idx] = my_realloc(ptrs[idx], new_size);
-                printf("\nrealloc finished succesfully \n");
+                mvprintw(9, 0, "realloc finished successfully.        ");
             }
-            printf("\nchoice a new option ");
-            scanf("%d", &choice);
         }
         else if (choice == 4)
+        {
+            endwin();
             return 0;
+        }
         else
         {
-            printf("\nWrong options plz select again ");
-            scanf("%d", &choice);
+            mvprintw(7, 0, "Wrong option, try again.              ");
         }
+
+        refresh();
     }
+
+    endwin();
     return 0;
 }
 
