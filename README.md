@@ -43,7 +43,7 @@ Needs `ncurses` installed.
 ```bash
 # Ubuntu/Debian
 sudo apt install libncurses-dev
-'''
+```
 
 Then:
 
