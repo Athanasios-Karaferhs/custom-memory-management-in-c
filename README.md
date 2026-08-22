@@ -1,4 +1,3 @@
-[README.md](https://github.com/user-attachments/files/31336555/README.md)
 # Custom Memory Allocator (malloc/free/realloc from scratch)
 
 A from-scratch reimplementation of `malloc`, `free`, and `realloc` in C, built to actually understand what the standard library is doing under the hood instead of just trusting it. Memory is requested from the OS with `sbrk`, and everything past that — tracking blocks, finding a free one to reuse, growing an allocation — is handled manually with an intrusive linked list.
