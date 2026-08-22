@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
-#include <ncurses.h> //terminal ui
+#include <ncurses.h> // terminal ui
 
 typedef struct block
 {
@@ -18,11 +18,15 @@ static block_t *head = NULL;
 void my_free(void *ptr);
 void *my_malloc(size_t size);
 void *my_realloc(void *ptr, size_t new_size);
+void draw_heap(int start_row);
 
 int main()
 {
     initscr();
-    cbreak(); // read input without enter
+    start_color();
+    init_pair(1, COLOR_GREEN, COLOR_BLACK); // used
+    init_pair(2, COLOR_RED, COLOR_BLACK);   // free
+    cbreak();                               // read input without enter
     echo();
 
     int choice;
@@ -30,10 +34,9 @@ int main()
     void **ptrs = NULL;
     int capacity = 0;
     int count = 0;
-
+    int i = 0;
     while (1)
     {
-
         mvprintw(0, 0, "| OPTIONS |                              ");
         mvprintw(1, 0, "1. malloc()                              ");
         mvprintw(2, 0, "2. free()                                ");
@@ -60,8 +63,9 @@ int main()
         }
         else if (choice == 2)
         {
-            mvprintw(8, 0, "            ");
-            mvprintw(9, 0, "           ");
+            mvprintw(8, 0, "                                ");
+            mvprintw(9, 0, "                                ");
+
             if (count == 0)
             {
                 mvprintw(7, 0, "No memory available.                ");
@@ -74,24 +78,23 @@ int main()
                 clrtoeol();
                 refresh();
                 scanw("%d", &idx);
-                while (idx > count - 1)
+
+                while (idx < 0 || idx >= count || ptrs[idx] == NULL)
                 {
-                    mvprintw(8, 0, " ");
-                    mvprintw(7, 0, "Please select from (0-%d)   \n", count - 1);
+                    mvprintw(8, 0, "Invalid or already-freed slot.        ");
+                    mvprintw(7, 0, "Which slot to free (0 to %d): ", count - 1);
+                    clrtoeol();
+                    refresh();
                     scanw("%d", &idx);
                 }
-                if (idx < 0 || idx >= count)
-                {
-                    mvprintw(8, 0, "Invalid slot.                       ");
-                }
-                else
-                {
-                    mvprintw(7, 0, "slot is free                      ");
-                    mvprintw(8, 0, " ");
-                    my_free(ptrs[idx]);
-                    ptrs[idx] = NULL;
-                }
-                count--;
+
+                mvprintw(7, 0, "slot is free                      ");
+                mvprintw(8, 0, " ");
+                my_free(ptrs[idx]);
+                ptrs[idx] = NULL;
+
+                if (idx == count - 1)
+                    count--;
             }
         }
         else if (choice == 3)
@@ -136,10 +139,9 @@ int main()
             return 0;
         }
         else
-        {
             mvprintw(7, 0, "Wrong option, try again.              ");
-        }
 
+        draw_heap(12);
         refresh();
     }
 
@@ -205,7 +207,7 @@ void *my_realloc(void *ptr, size_t new_size)
         return NULL;
     }
 
-    block_t *block = (block_t *)ptr - 1; // παρομια με το free()
+    block_t *block = (block_t *)ptr - 1;
 
     if (block->size >= new_size)
     {
@@ -219,4 +221,40 @@ void *my_realloc(void *ptr, size_t new_size)
     memcpy(new_ptr, ptr, block->size);
     my_free(ptr);
     return new_ptr;
+}
+
+void draw_heap(int start_row)
+{
+    // clear a generous chunk of the display region first, so old rows
+    // from a longer previous heap don't linger when blocks disappear
+    for (int i = start_row; i < start_row + 30; i++)
+    {
+        move(i, 0);
+        clrtoeol();
+    }
+
+    mvprintw(start_row, 0, "--- Heap State ---");
+    int row = start_row + 1;
+
+    block_t *curr = head;
+    int i = 0;
+
+    if (!curr)
+    {
+        mvprintw(row, 0, "(empty - no allocations yet)");
+        return;
+    }
+
+    while (curr)
+    {
+        int pair = curr->free ? 2 : 1;
+        attron(COLOR_PAIR(pair));
+        mvprintw(row, 0, "Block %d | addr: %p | size: %-5zu | %s",
+                 i, (void *)curr, curr->size, curr->free ? "FREE" : "USED");
+        attroff(COLOR_PAIR(pair));
+
+        row++;
+        curr = curr->next;
+        i++;
+    }
 }
