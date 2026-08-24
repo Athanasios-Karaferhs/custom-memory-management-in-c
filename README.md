@@ -40,24 +40,15 @@ Below it, the current state of the heap is drawn live — one row per block, col
 
 Needs `ncurses` installed.
 
-```bash
-# Ubuntu/Debian
-sudo apt install libncurses-dev
-```
+##linux kernal devices(at least the ones I tested it :D ):
 
-Then:
+you can download ncurses with a basic ```bash sudo ``` command. 
+
+#on window's: 
+open your ```bash MSYS2 terminal ```,then do ```bash pacman -Syu ```, then ```bash pacman -S mingw-w64-ucrt-x86_64-ncurses ```.
+
+Then comp:
 
 ```bash
 gcc allocator.c -o allocator -lncurses
 ./allocator
-```
-
-## What's next
-
-- Coalescing adjacent free blocks to fight fragmentation
-- Alignment handling
-- Possibly `mmap` for larger allocations, the way real allocators split between `sbrk` and `mmap` by size
-
-## Disclaimer
-
-This is a learning project, not a `malloc` replacement — don't use it for anything that actually matters. Its whole point is to be readable and understandable, not fast or safe.
