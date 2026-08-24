@@ -1,4 +1,6 @@
 myalloc
+todo.txt
+Dockerfile
 *.o
 *.out
 *.a

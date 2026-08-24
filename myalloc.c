@@ -49,9 +49,14 @@ int main()
 
         if (choice == 1)
         {
-            mvprintw(8, 0, "            ");
-            mvprintw(9, 0, "           ");
-            p = my_malloc(100);
+            size_t size;
+            mvprintw(8, 0, "                                     ");
+            mvprintw(9, 0, "                                     ");
+            mvprintw(7, 0, "Give the size to malloc: ");
+            clrtoeol();
+            refresh();
+            scanw("%zu", &size);
+            p = my_malloc(size);
             mvprintw(7, 0, "New pointer available: %p          ", p);
 
             if (count == capacity)
@@ -99,8 +104,8 @@ int main()
         }
         else if (choice == 3)
         {
-            mvprintw(8, 0, "            ");
-            mvprintw(9, 0, "           ");
+            mvprintw(8, 0, "                                       ");
+            mvprintw(9, 0, "                                       ");
             int idx = -1;
             size_t new_size = 0;
 
@@ -144,7 +149,6 @@ int main()
         draw_heap(12);
         refresh();
     }
-
     endwin();
     return 0;
 }
@@ -159,11 +163,19 @@ void *my_malloc(size_t size)
     {
         if (curr->free && curr->size >= size)
         {
+            if (curr->size >= size + BLOCK_SIZE) // in case we find a huge block of memory we split it
+            {
+                block_t *new_free = (block_t *)((char *)(curr + 1) + size);
+                new_free->size = curr->size - size - BLOCK_SIZE; // original block's total usable space, minus what we're keeping for the caller, minus room for the new header
+                // e.g.the current size is 700, if we free it we do 700- 10(size)-24(new headers) = 666
+                new_free->free = 1;
+                new_free->next = curr->next; // cope before overwriting
+                curr->size = size;           // shrink
+                curr->next = new_free;
+            }
             curr->free = 0;
             return (void *)(curr + 1); //+1=shift by sizeof(type) bytes
         }
-        last = curr;
-        curr = curr->next;
     }
 
     // ask for mem
