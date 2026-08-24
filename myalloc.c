@@ -176,6 +176,8 @@ void *my_malloc(size_t size)
             curr->free = 0;
             return (void *)(curr + 1); //+1=shift by sizeof(type) bytes
         }
+        last = curr;
+        curr = curr->next;
     }
 
     // ask for mem
@@ -261,8 +263,7 @@ void draw_heap(int start_row)
     {
         int pair = curr->free ? 2 : 1;
         attron(COLOR_PAIR(pair));
-        mvprintw(row, 0, "Block %d | addr: %p | size: %-5zu | %s",
-                 i, (void *)curr, curr->size, curr->free ? "FREE" : "USED");
+        mvprintw(row, 0, "Block %d | addr: %p | size: %-5zu | %s", i, (void *)curr, curr->size, curr->free ? "FREE" : "USED");
         attroff(COLOR_PAIR(pair));
 
         row++;
