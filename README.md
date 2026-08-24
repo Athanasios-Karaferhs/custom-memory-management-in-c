@@ -40,11 +40,11 @@ Below it, the current state of the heap is drawn live — one row per block, col
 
 Needs `ncurses` installed.
 
-##linux kernal devices(at least the ones I tested it :D ):
+## linux kernal devices(at least the ones I tested it :D ):
 
 you can download ncurses with a basic ```bash sudo ``` command. 
 
-#on window's: 
+## on window's: 
 open your ```bash MSYS2 terminal ```,then do ```bash pacman -Syu ```, then ```bash pacman -S mingw-w64-ucrt-x86_64-ncurses ```.
 
 Then comp:
