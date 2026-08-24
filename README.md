@@ -54,7 +54,6 @@ gcc allocator.c -o allocator -lncurses
 
 ## What's next
 
-- Splitting oversized blocks instead of handing out more than requested
 - Coalescing adjacent free blocks to fight fragmentation
 - Alignment handling
 - Possibly `mmap` for larger allocations, the way real allocators split between `sbrk` and `mmap` by size
